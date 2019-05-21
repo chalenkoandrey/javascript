@@ -1,16 +1,9 @@
 var express = require("express");
-var entity=require("entity");
-var UserEntity=entity.extend(function(){
-        this.a=1;
-})
-var userEnt=UserEntity.extend();
-entity.create({name:'fed'})
-        .then(function(udo){
-          udo.name === 'fed';      
-        })
-        .catch(function(error){
-          console.log("error");
-        });
+var MongoClient=require("mongodb").MongoClient;
+var url='mongodb://localhost/UserDB';
+var db=MongoClient.connect(url,function(err,db){
+        if(err)throw err;
+});
 var app = express();
 var array=require("./arrayOfUsers");
 var max=10;
