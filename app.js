@@ -1,18 +1,49 @@
 var express = require("express");
-var MongoClient=require("mongodb").MongoClient;
-var url='mongodb://localhost/UserDB';
-var db=MongoClient.connect(url,function(err,db){
-        if(err)throw err;
-});
+var MongoClient = require('mongodb').MongoClient;
+var url="mongodb://localhost:27017/";
+var mongoclient=new MongoClient(url,{native_parser:true});
 var app = express();
+app.use(express.urlencoded({extended: true}));
 var array=require("./arrayOfUsers");
-var max=10;
-var min=0;
-app.get("", (req, res, next) => {
-        var i=Math.round(min+Math.random()*(max-min+1));
-        console.log("Случайное число="+i);
- res.json(array.arrayUsers[i].name);
-});
-app.listen(3000, () => {
- console.log("Server running on port 3000");
+mongoclient.connect(function(err, client){
+        if(err){
+                return console.log(err);
+        }
+        var db=client.db("UserDB");
+                        const collection = db.collection("UserDB");
+        app.post("/add", function(req, res) {
+                if(!req.body) return res.sendStatus(400);
+                console.log(req.body);
+                if(req.body.id)
+                {
+                        let user = {"id":req.body.id ,name:req.body.name,family:req.body.family,date:req.body.date};
+                        collection.insertOne(user, function(err, result){
+                        if(err){ 
+                                return console.log(err);
+                        }
+                        console.log(result.ops);
+                        });
+                        collection.find().toArray(function(err,result){
+                                res.json(result);
+                        });
+                }        
+        });
+        app.get("/show", (req, res, next) => {
+                        collection.find().toArray(function(err,result){
+                                res.json(result);
+                        });
+        });
+        app.delete("/delete", (req, res, next) => {
+                collection.deleteOne({"id":req.body.id},function(err, result){
+                        if(err){ 
+                                return console.log(err);
+                        }
+                }); 
+                collection.find().toArray(function(err,result){
+                        res.json(result);
+                    })
+        });
+        app.listen(3000, () => {
+                console.log("Server running on port 3000");
+        });
 });
