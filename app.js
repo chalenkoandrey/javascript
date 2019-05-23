@@ -14,9 +14,15 @@ mongoclient.connect(function (err, client) {
     if (!req.body) return res.sendStatus(400);
     if (req.body.id && req.body.name && req.body.date) {
       let user = { "id": req.body.id, name: req.body.name, date: req.body.date };
-      collection.insertOne(user);
-      collection.find().toArray(function (err, result) {
-        return res.json(result);
+      collection.insertOne(user, function (err, result) {
+        if (err) {
+          res.send({ error: "Error add new user" + err });
+        }
+        else {
+          collection.find().toArray(function (err, result) {
+            return res.json({ messege: "Add Ok", result });
+          });
+        }
       });
     }
     else {
@@ -34,10 +40,12 @@ mongoclient.connect(function (err, client) {
       if (!result[0]) {
         return res.send({ error: "No many user with whis id" });
       }
-      collection.deleteMany({ "id": req.body.id });
-      collection.find().toArray(function (err, result) {
-        return res.json(result);
-      });
+      else {
+        collection.deleteMany({ "id": req.body.id });
+        collection.find().toArray(function (err, result) {
+          return res.json(result);
+        });
+      }
     });
 
   });
