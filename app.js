@@ -9,10 +9,10 @@ mongoose.connect(url, { useNewUrlParser: true }, function (err, client) {
   else {
     var db = mongoose.connection;
     const collection = db.collection("UserDB");
-    app.post("/", function (req, res) {
+    app.post("/:id", function (req, res) {
       if (!req.body) return res.sendStatus(400);
-      if (req.body.id && req.body.name && req.body.date) {
-        let user = { "id": req.body.id, name: req.body.name, date: req.body.date };
+      if (req.params.id && req.body.name && req.body.date) {
+        let user = { "id": req.params.id, name: req.body.name, date: req.body.date };
         collection.insertOne(user, function (err, result) {
           if (err) {
             res.send({ error: "Error add new user" + err });
@@ -43,13 +43,13 @@ mongoose.connect(url, { useNewUrlParser: true }, function (err, client) {
         }
       });
     });
-    app.delete("/", (req, res, next) => {
-      collection.find({ "id": req.body.id }).toArray(function (err, result) {
+    app.delete("/:id", (req, res, next) => {
+      collection.find({ "id": req.params.id }).toArray(function (err, result) {
         if (!result[0]) {
           return res.send({ error: "No many user with whis id" });
         }
         else {
-          collection.deleteMany({ "id": req.body.id });
+          collection.deleteMany({ "id": req.params.id });
           collection.find().toArray(function (err, result) {
             return res.json(result);
           });
