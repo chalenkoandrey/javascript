@@ -1,17 +1,41 @@
-var url = "mongodb://localhost:27017/UserDB";
-var mongoose = require('mongoose');
-mongoose.connect(url, { useNewUrlParser: true });
-var db = mongoose.connection;
-db.on('error', function (error) {
-  console.log(error);
+var express = require('express');
+var router = express.Router();
+var UserModel = require("./model").UserModel;
+router.post("/user/", function (req, res) {
+  if (!req.body) return res.sendStatus(400);
+  if (req.body.name && req.body.date) {
+    var user = new UserModel({
+      name: req.body.name,
+      date: req.body.date
+    });
+    return user.save(function (err) {
+      if (err) {
+        res.send({ error: "Error add new user" + err });
+      }
+      else {
+        res.json({ messege: "Add Ok", user: user });
+      }
+    });
+  }
+  else {
+    return res.send({ error: "Not full params" })
+  }
 });
-db.once('open', function () {
-  console.info("Connected to DB");
-})
-var Schema = mongoose.Schema;
-var User = new Schema({
-  name: { type: String, required: true },
-  date: { type: Date, required: true }
+router.get("/user/", (req, res, next) => {
+  return UserModel.find(function (err, result) {
+    res.json({ result });
+  })
 });
-var UserModel = mongoose.model('User', User);
-module.exports.UserModel = UserModel;
+router.get("/user/:id", (req, res, next) => {
+  return UserModel.findById(req.params.id, function (err, result) {
+    res.json({ result });
+  })
+});
+router.delete("/user/:id", (req, res, next) => {
+  return UserModel.findByIdAndDelete(req.params.id, function (err, result) {
+    UserModel.find(function (err, result) {
+      res.json({ result });
+    });
+  });
+});
+module.exports.router = router;
