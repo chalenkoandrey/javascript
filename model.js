@@ -1,4 +1,4 @@
-var mongoose = require("./setup").mongoose;
+var mongoose = require("./mongoose").mongoose;
 var Schema = mongoose.Schema;
 var User = new Schema({
   name: { type: String, required: true },
