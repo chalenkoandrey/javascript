@@ -1,16 +1,21 @@
 var UserModel = require("./model").UserModel;
 function addUser(req, res) {
-  var user = new UserModel({
-    name: req.body.name,
-    date: req.body.date
-  });
-  user.save()
-    .then((result) => {
-      res.json({ messege: "Add Ok", user: user });
-    })
-    .catch((error) => {
-      res.send({ error: "Error add new user" + err });
-    })
+  if (req.body.name && req.body.date) {
+    var user = new UserModel({
+      name: req.body.name,
+      date: req.body.date
+    });
+    user.save()
+      .then((result) => {
+        res.json({ messege: "Add Ok", user: user });
+      })
+      .catch((error) => {
+        res.send({ error: "Error add new user" + err });
+      })
+  }
+  else {
+    return res.send({ error: "Not full params" })
+  }
 }
 function showall(req, res) {
   UserModel.find()
