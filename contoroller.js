@@ -17,7 +17,7 @@ function addUser(req, res) {//add user to DataBase
     return res.send({ error: "Not full params" })
   }
 }
-function showall(req, res) {//show all users in DataBase
+async function showall(req, res) {//show all users in DataBase
   UserModel.find()
     .exec()
     .then((result) => {
@@ -40,22 +40,33 @@ function showById(req, res) {//show user by id
 function deleteById(req, res) {//delete user from DataBase
   UserModel.findByIdAndDelete(req.params.id)
     .exec()
-    .then(showall(req, res))
+    .then(async () => { showall(req, res) })
     .catch((error) => {
       res.send(error);
     })
 }
 function addFriendsReqById(req, res) {//send reqest to friend
-  UserModel.findById(req.params.id)
+  var toUser = req.params.id;
+  var fromUser = req.params.myid;
+  UserModel.findById(toUser)
     .exec()
     .then((user) => {
-      if (!user.friends.includes(req.params.myid)) {
-        UserModel.findByIdAndUpdate(req.params.id, { $addToSet: { friendsreqst: req.params.myid } })
-          .exec()
-          .then(showById(req, res))
-          .catch((error) => {
-            res.send(error);
-          });
+      if (!isFriend(user, fromUser)) {
+        if (!isFriendRequset(user, fromUser)) {
+          UserModel.findById(toUser)
+            .exec()
+            .then((user) => {
+              user.friendsrequest.addToSet(fromUser);
+              user.save()
+              showById(req, res);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+        else {
+          res.send("Request already send")
+        }
       }
       else {
         res.send("User alredy friend")
@@ -65,22 +76,31 @@ function addFriendsReqById(req, res) {//send reqest to friend
       res.send(error);
     });
 }
-function addFriendsById(req, res) {//add user from friendsrequest to friends
-  UserModel.findById(req.params.myid)
+function acceptFriendById(req, res) {//add user from friendsrequest to friends
+  var toUser = req.params.id;
+  var fromUser = req.params.myid;
+  UserModel.findById(fromUser)
     .exec()
     .then((user) => {
-      if (user.friends.indexOf(req.params.id) < 0) {
-        if (user.friendsreqst.indexOf(req.params.id) >= 0) {
-          user.update({ $addToSet: { friends: req.params.id }, $pull: { friendsreqst: req.params.id } })
-          UserModel.findByIdAndUpdate(req.params.id, { $addToSet: { friends: req.params.myid }, $pull: { friendsreqst: req.params.myid } })
+      if (!isFriend(user, toUser)) {
+        if (isFriendRequset(user, fromUser)) {
+          user.friends.addToSet(toUser);
+          user.friendsrequest.pull(toUser);
+          user.save();
+          UserModel.findById(toUser)
             .exec()
-            .then(showById(req, res))
+            .then((user) => {
+              user.friends.addToSet(fromUser);
+              user.friendsrequest.pull(fromUser);
+              user.save();
+              showById(req, res)
+            })
             .catch((error) => {
               res.send(error);
             });
         }
         else {
-          res.send("No req friend");
+          res.send("No request friend");
         }
       }
       else {
@@ -91,30 +111,57 @@ function addFriendsById(req, res) {//add user from friendsrequest to friends
       res.send({ "error": error });
     });
 }
-function deleteFriendsById(req, res) {//delete friends by id
-  UserModel.findByIdAndUpdate(req.params.myid, { $pull: { friends: req.params.id } })
+function deleteFriendById(req, res) {//delete friends by id
+  var toUser = req.params.id;
+  var fromUser = req.params.myid;
+  UserModel.findById(fromUser)
     .exec()
-    .then(() => {
-      UserModel.findByIdAndUpdate(req.params.id, { $pull: { friends: req.params.myid } })
-        .exec()
-        .then(() => {
-          res.send({ result: "delete Ok" })
-        })
-        .catch((error) => {
-          res.send(error);
-        });
+    .then((user) => {
+      if (isFriend(user, toUser)) {
+        user.friends.pull(toUser);
+        user.save();
+        UserModel.findById(toUser)
+          .exec()
+          .then((user) => {
+            user.friends.pull(fromUser);
+            user.save();
+            res.send({ result: "delete Ok" })
+          })
+          .catch((error) => {
+            res.send(error);
+          });
+      }
+      else {
+        res.send("User with this id no friend");
+      }
     })
     .catch((error) => {
       res.send(error);
     });
-
 }
 function deleteFriendsReqById(req, res) {//delete friends request
-  UserModel.findByIdAndUpdate(req.params.myid, { $pull: { friendsreqst: req.params.id } })
+  var toUser = req.params.id;
+  var fromUser = req.params.myid;
+  UserModel.findById(fromUser)
     .exec()
-    .then(showById(req, res))
+    .then((user) => {
+      if (isFriendRequset(user, toUser)) {
+        user.friendsrequest.pull(toUser);
+        user.save();
+        showById(req, res);
+      }
+      else {
+        res.send("No request with this id")
+      }
+    })
     .catch((error) => {
       res.send(error);
     });
 }
-module.exports = { addUser, showall, showById, deleteById, addFriendsReqById, addFriendsById, deleteFriendsById, deleteFriendsReqById };
+function isFriend(user, toUser) {
+  return user.friends.includes(toUser);
+}
+function isFriendRequset(user, fromUser) {
+  return user.friendsrequest.includes(fromUser);
+}
+module.exports = { addUser, showall, showById, deleteById, addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById };
