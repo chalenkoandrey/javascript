@@ -133,7 +133,7 @@ function deleteFriendById(req, res) {//delete friends by id
           .exec()
           .then((user) => {
             user.friends.pull(fromUser);
-            user.save();
+            return user.save();
             res.send({ result: "delete Ok" })
           })
           .catch((error) => {
