@@ -17,7 +17,7 @@ function addUser(req, res) {//add user to DataBase
     return res.send({ error: "Not full params" })
   }
 }
-async function showall(req, res) {//show all users in DataBase
+function showall(req, res) {//show all users in DataBase
   UserModel.find()
     .exec()
     .then((result) => {
@@ -40,7 +40,12 @@ function showById(req, res) {//show user by id
 function deleteById(req, res) {//delete user from DataBase
   UserModel.findByIdAndDelete(req.params.id)
     .exec()
-    .then(async () => { showall(req, res) })
+    .then((user) => {
+      return user.remove();
+    })
+    .then(() => {
+      showall(req, res)
+    })
     .catch((error) => {
       res.send(error);
     })
@@ -57,8 +62,10 @@ function addFriendsReqById(req, res) {//send reqest to friend
             .exec()
             .then((user) => {
               user.friendsrequest.addToSet(fromUser);
-              user.save()
-              showById(req, res);
+              return user.save()
+            })
+            .then((user) => {
+              res.send(user);
             })
             .catch((error) => {
               console.log(error);
@@ -92,8 +99,10 @@ function acceptFriendById(req, res) {//add user from friendsrequest to friends
             .then((user) => {
               user.friends.addToSet(fromUser);
               user.friendsrequest.pull(fromUser);
-              user.save();
-              showById(req, res)
+              return user.save();
+            })
+            .then((user) => {
+              res.send(user);
             })
             .catch((error) => {
               res.send(error);
@@ -147,12 +156,14 @@ function deleteFriendsReqById(req, res) {//delete friends request
     .then((user) => {
       if (isFriendRequset(user, toUser)) {
         user.friendsrequest.pull(toUser);
-        user.save();
-        showById(req, res);
+        return user.save();
       }
       else {
         res.send("No request with this id")
       }
+    })
+    .then((user) => {
+      res.send(user);
     })
     .catch((error) => {
       res.send(error);
