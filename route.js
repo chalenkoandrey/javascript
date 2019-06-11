@@ -7,4 +7,12 @@ router.route("/users/")
 router.route("/users/:id")
   .get(controller.showById)
   .delete(controller.deleteById);
+router.route("/users/:id/requestFriend/:myid")
+  .post(controller.addFriendsReqById)
+router.route("/users/:id/acceptFriend/:myid")
+  .post(controller.acceptFriendById)
+router.route("/users/:id/deleteFriend/:myid")
+  .delete(controller.deleteFriendById)
+router.route("/users/:id/deleteRequest/:myid")
+  .delete(controller.deleteFriendsReqById)
 module.exports.Router = router
