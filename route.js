@@ -3,6 +3,8 @@ let router = express.Router();
 const controller = require("./contoroller");
 router.route("/login")
   .post(controller.login)
+router.route("/registration")
+  .post(controller.registration)
 router.route("/users/")
   .post(controller.addUser)
   .get(controller.showall);

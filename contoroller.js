@@ -36,6 +36,29 @@ function veryfyToken(req, res, next) {
     res.send("No token")
   }
 }
+function registration(req, res) {
+  if (req.body.name && req.body.date && req.body.password) {
+    let user = new UserModel({
+      name: req.body.name,
+      date: req.body.date,
+      password: req.body.password
+    });
+    user.save()
+      .then((result) => {
+        jwt.sign({ user: user.id, password: user.password }, "secret", { expiresIn: "1day" }, (err, token) => {
+          res.json({
+            token
+          });
+        });
+      })
+      .catch((error) => {
+        res.send({ error: "Error add new user" + error });
+      })
+  }
+  else {
+    return res.send({ error: "Not full params" })
+  }
+}
 function addUser(req, res) {//add user to DataBase
   if (req.body.name && req.body.date && req.body.password) {
     var user = new UserModel({
@@ -221,4 +244,4 @@ function isFriend(user, toUser) {
 function isFriendRequset(user, fromUser) {
   return user.friendsrequest.includes(fromUser);
 }
-module.exports = { veryfyToken, login, addUser, showall, showById, deleteById, addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById };
+module.exports = { registration, veryfyToken, login, addUser, showall, showById, deleteById, addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById };
