@@ -244,4 +244,7 @@ function isFriend(user, toUser) {
 function isFriendRequset(user, fromUser) {
   return user.friendsrequest.includes(fromUser);
 }
-module.exports = { registration, veryfyToken, login, addUser, showall, showById, deleteById, addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById };
+module.exports = {
+  registration, veryfyToken, login, addUser, showall, showById, deleteById,
+  addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById
+};
