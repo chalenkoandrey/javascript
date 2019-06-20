@@ -1,22 +1,22 @@
 const express = require("express");
 let router = express.Router();
 const controller = require("./contoroller");
-router.route("/login")
-  .post(controller.login)
-router.route("/registration")
+const authorization = require("./authorization");
+router.route("/login/")
+  .post(authorization.login)
+router.route("/registration/")
   .post(controller.registration)
 router.route("/users/")
-  .post(controller.addUser)
   .get(controller.showall);
 router.route("/users/:id")
   .get(controller.showById)
   .delete(controller.deleteById);
 router.route("/users/:id/requestFriend/")
-  .post(controller.veryfyToken, controller.addFriendsReqById)
+  .post(authorization.veryfyAuthorization, controller.addFriendsReqById)
 router.route("/users/:id/acceptFriend/")
-  .post(controller.veryfyToken, controller.acceptFriendById)
+  .post(authorization.veryfyAuthorization, controller.acceptFriendById)
 router.route("/users/:id/deleteFriend/")
-  .delete(controller.veryfyToken, controller.deleteFriendById)
+  .delete(authorization.veryfyAuthorization, controller.deleteFriendById)
 router.route("/users/:id/deleteRequest/")
-  .delete(controller.veryfyToken, controller.deleteFriendsReqById)
+  .delete(authorization.veryfyAuthorization, controller.deleteFriendsReqById)
 module.exports.Router = router
