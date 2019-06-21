@@ -1,10 +1,11 @@
-var mongoose = require("./mongoose").mongoose;
-var Schema = mongoose.Schema;
-var User = new Schema({
-  name: { type: String, required: true },
+const mongoose = require("./mongoose").mongoose;
+const Schema = mongoose.Schema;
+const User = new Schema({
+  password: { type: String },
+  name: { type: String, required: true, unique: true },
   date: { type: Date, required: true },
   friends: { type: [String], required: true },
   friendsrequest: { type: [String], required: true, }
 });
-var UserModel = mongoose.model('User', User);
+const UserModel = mongoose.model('User', User);
 module.exports.UserModel = UserModel;
