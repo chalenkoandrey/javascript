@@ -72,7 +72,7 @@ function registration(req, res) {
   }
   else {
     return res
-      .status(416)
+      .status(449)
       .send({ error: "Not full params" });
   }
 }

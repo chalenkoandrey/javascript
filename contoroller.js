@@ -9,7 +9,7 @@ function showall(req, res) {//show all users in DataBase
     })
     .catch((error) => {
       res
-        .status(500)
+        .status(502)
         .send(error);
     })
 }
@@ -29,7 +29,7 @@ function showById(req, res) {//show user by id
     })
     .catch((error) => {
       res
-        .status(500)
+        .status(502)
         .send(error);
     })
 }
