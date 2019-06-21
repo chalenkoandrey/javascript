@@ -1,5 +1,4 @@
 const express = require("express");
-const jwt = require("jsonwebtoken")
 const app = express();
 const router = require("./route").Router;
 app.use(express.urlencoded({ extended: true }));

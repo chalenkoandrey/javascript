@@ -1,34 +1,4 @@
 const UserModel = require("./model").UserModel;
-const jwt = require("jsonwebtoken")
-function registration(req, res) {
-  if (req.body.name && req.body.date && req.body.password) {
-    let user = new UserModel({
-      name: req.body.name,
-      date: req.body.date,
-      password: Buffer(req.body.password).toString('hex')
-    });
-    user.save()
-      .then((result) => {
-        jwt.sign({ user: user.id, password: user.password }, "secret", { expiresIn: "1day" }, (err, token) => {
-          res
-            .status(201)
-            .json({
-              token
-            });
-        });
-      })
-      .catch((error) => {
-        res
-          .status(400)
-          .send({ error: "Error add new user" + error });
-      })
-  }
-  else {
-    return res
-      .status(416)
-      .send({ error: "Not full params" });
-  }
-}
 function showall(req, res) {//show all users in DataBase
   UserModel.find()
     .exec()
@@ -228,6 +198,6 @@ function isFriendRequset(user, fromUser) {
   return user.friendsrequest.includes(fromUser);
 }
 module.exports = {
-  registration, showall, showById, deleteById,
+  showall, showById, deleteById,
   addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById
 };
