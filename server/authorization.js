@@ -24,7 +24,7 @@ function login(req, res) {
         .send("No User in Database")
     })
 }
-function veryfyAuthorization(req, res, next) {
+function isUserAuthorized(req, res, next) {
   const tokenHeader = req.headers['authorization'];
   if (tokenHeader) {
     const token = tokenHeader.split(" ")[1];
@@ -43,8 +43,37 @@ function veryfyAuthorization(req, res, next) {
   }
   else {
     res
-      .status(400)
+      .status(403)
       .send("No token")
   }
 }
-module.exports = { login, veryfyAuthorization }
+function registration(req, res) {
+  if (req.body.name && req.body.date && req.body.password) {
+    let user = new UserModel({
+      name: req.body.name,
+      date: req.body.date,
+      password: Buffer(req.body.password).toString('hex')
+    });
+    user.save()
+      .then(() => {
+        jwt.sign({ user: user.id, password: user.password }, "secret", { expiresIn: "1day" }, (err, token) => {
+          res
+            .status(201)
+            .json({
+              token
+            });
+        });
+      })
+      .catch((error) => {
+        res
+          .status(502)
+          .send({ error: "Error add new user" + error });
+      })
+  }
+  else {
+    return res
+      .status(449)
+      .send({ error: "Not full params" });
+  }
+}
+module.exports = { login, isUserAuthorized, registration }

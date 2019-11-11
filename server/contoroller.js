@@ -1,34 +1,4 @@
 const UserModel = require("./model").UserModel;
-const jwt = require("jsonwebtoken")
-function registration(req, res) {
-  if (req.body.name && req.body.date && req.body.password) {
-    let user = new UserModel({
-      name: req.body.name,
-      date: req.body.date,
-      password: Buffer(req.body.password).toString('hex')
-    });
-    user.save()
-      .then((result) => {
-        jwt.sign({ user: user.id, password: user.password }, "secret", { expiresIn: "1day" }, (err, token) => {
-          res
-            .status(201)
-            .json({
-              token
-            });
-        });
-      })
-      .catch((error) => {
-        res
-          .status(400)
-          .send({ error: "Error add new user" + error });
-      })
-  }
-  else {
-    return res
-      .status(416)
-      .send({ error: "Not full params" });
-  }
-}
 function showall(req, res) {//show all users in DataBase
   UserModel.find()
     .exec()
@@ -39,13 +9,13 @@ function showall(req, res) {//show all users in DataBase
     })
     .catch((error) => {
       res
-        .status(500)
+        .status(502)
         .send(error);
     })
 }
 function showById(req, res) {//show user by id
-  var userId = req.params.id;
-  UserModel.findById(userId)
+  var userIdForShow = req.params.id;
+  UserModel.findById(userIdForShow)
     .exec()
     .then((result) => {
       if (result != null) {
@@ -59,12 +29,13 @@ function showById(req, res) {//show user by id
     })
     .catch((error) => {
       res
-        .status(500)
+        .status(502)
         .send(error);
     })
 }
 function deleteById(req, res) {//delete user from DataBase
-  UserModel.findByIdAndDelete(req.params.id)
+  var userIdForDelete = req.params.id;
+  UserModel.findByIdAndDelete(userIdForDelete)
     .exec()
     .then((user) => {
       return user.remove();
@@ -79,29 +50,15 @@ function deleteById(req, res) {//delete user from DataBase
     })
 }
 function addFriendsReqById(req, res) {//send reqest to friend
-  const fromUserId = req.authData.user;
-  const toUser = req.params.id;
-  UserModel.findById(toUser)
+  const authorizedUserId = req.authData.user;
+  const reqToUser = req.params.id;
+  UserModel.findById(reqToUser)
     .exec()
     .then((user) => {
-      if (!isFriend(user, fromUserId)) {
-        if (!isFriendRequset(user, fromUserId)) {
-          UserModel.findById(toUser)
-            .exec()
-            .then((user) => {
-              user.friendsrequest.addToSet(fromUserId);
-              return user.save()
-            })
-            .then((user) => {
-              res
-                .status(202)
-                .send(user);
-            })
-            .catch((error) => {
-              res
-                .status(400)
-                .send(error);
-            });
+      if (!isFriend(user, authorizedUserId)) {
+        if (!isFriendRequset(user, authorizedUserId)) {
+          user.friendsrequest.addToSet(authorizedUserId);
+          return user.save()
         }
         else {
           res
@@ -115,6 +72,11 @@ function addFriendsReqById(req, res) {//send reqest to friend
           .send("User alredy friend")
       }
     })
+    .then((user) => {
+      res
+        .status(202)
+        .send(user);
+    })
     .catch((error) => {
       res
         .status(404)
@@ -122,21 +84,21 @@ function addFriendsReqById(req, res) {//send reqest to friend
     });
 }
 function acceptFriendById(req, res) {//add user from friendsrequest to friends
-  const fromUserId = req.authData.user;
-  const toUser = req.params.id;
-  UserModel.findById(fromUser)
+  const authorizedUserId = req.authData.user;
+  const reqFromUser = req.params.id;
+  UserModel.findById(authorizedUserId)
     .exec()
     .then((user) => {
-      if (!isFriend(user, toUser)) {
-        if (isFriendRequset(user, fromUserId)) {
-          user.friends.addToSet(toUser);
-          user.friendsrequest.pull(toUser);
+      if (!isFriend(user, reqFromUser)) {
+        if (isFriendRequset(user, reqFromUser)) {
+          user.friends.addToSet(reqFromUser);
+          user.friendsrequest.pull(reqFromUser);
           user.save();
-          UserModel.findById(toUser)
+          UserModel.findById(reqFromUser)
             .exec()
             .then((user) => {
-              user.friends.addToSet(fromUserId);
-              user.friendsrequest.pull(fromUserId);
+              user.friends.addToSet(authorizedUserId);
+              user.friendsrequest.pull(authorizedUserId);
               return user.save();
             })
             .then((user) => {
@@ -147,11 +109,15 @@ function acceptFriendById(req, res) {//add user from friendsrequest to friends
             });
         }
         else {
-          res.send("No request friend");
+          res
+            .status(424)
+            .send("No request friend");
         }
       }
       else {
-        res.send("User alredy friend");
+        res
+          .status(422)
+          .send("User alredy friend");
       }
     })
     .catch((error) => {
@@ -159,18 +125,18 @@ function acceptFriendById(req, res) {//add user from friendsrequest to friends
     });
 }
 function deleteFriendById(req, res) {//delete friends by id
-  const fromUserId = req.authData.user;
-  const toUser = req.params.id;
-  UserModel.findById(fromUserId)
+  const authorizedUserId = req.authData.user;
+  const userIdForDelete = req.params.id;
+  UserModel.findById(authorizedUserId)
     .exec()
     .then((user) => {
-      if (isFriend(user, toUser)) {
-        user.friends.pull(toUser);
+      if (isFriend(user, userIdForDelete)) {
+        user.friends.pull(userIdForDelete);
         user.save();
-        UserModel.findById(toUser)
+        UserModel.findById(userIdForDelete)
           .exec()
           .then((user) => {
-            user.friends.pull(fromUserId);
+            user.friends.pull(authorizedUserId);
             return user.save();
           })
           .catch((error) => {
@@ -195,13 +161,13 @@ function deleteFriendById(req, res) {//delete friends by id
     });
 }
 function deleteFriendsReqById(req, res) {//delete friends request
-  const fromUserId = req.authData.user;
-  const toUser = req.params.id;
-  UserModel.findById(fromUserId)
+  const authorizedUserId = req.authData.user;
+  const userIdForDelete = req.params.id;
+  UserModel.findById(authorizedUserId)
     .exec()
     .then((user) => {
-      if (isFriendRequset(user, toUser)) {
-        user.friendsrequest.pull(toUser);
+      if (isFriendRequset(user, userIdForDelete)) {
+        user.friendsrequest.pull(userIdForDelete);
         return user.save();
       }
       else {
@@ -221,13 +187,23 @@ function deleteFriendsReqById(req, res) {//delete friends request
         .send(error);
     });
 }
-function isFriend(user, toUser) {
-  return user.friends.includes(toUser);
+function isFriend(user, fromUser) {
+  return user.friends.includes(fromUser);
 }
 function isFriendRequset(user, fromUser) {
   return user.friendsrequest.includes(fromUser);
 }
+function showByToken(req, res) {
+  console.log(req)
+  const authorizedUserId = req.authData.user;
+  UserModel.findById(authorizedUserId)
+    .then((user) => {
+      res
+        .status(202)
+        .send(user)
+    })
+}
 module.exports = {
-  registration, showall, showById, deleteById,
+  showall, showById, deleteById, showByToken,
   addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById
 };
