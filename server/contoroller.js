@@ -193,7 +193,17 @@ function isFriend(user, fromUser) {
 function isFriendRequset(user, fromUser) {
   return user.friendsrequest.includes(fromUser);
 }
+function showByToken(req, res) {
+  console.log(req)
+  const authorizedUserId = req.authData.user;
+  UserModel.findById(authorizedUserId)
+    .then((user) => {
+      res
+        .status(202)
+        .send(user)
+    })
+}
 module.exports = {
-  showall, showById, deleteById,
+  showall, showById, deleteById, showByToken,
   addFriendsReqById, acceptFriendById, deleteFriendById, deleteFriendsReqById
 };

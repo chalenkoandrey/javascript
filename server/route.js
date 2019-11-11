@@ -8,7 +8,7 @@ router.route("/registration/")
   .post(authorization.registration)
 router.route("/users/")
   .get(controller.showall);
-router.route("/users/:id")
+router.route("/user/:id")
   .get(controller.showById)
   .delete(controller.deleteById);
 router.route("/users/:id/requestFriend/")
@@ -19,4 +19,6 @@ router.route("/users/:id/deleteFriend/")
   .delete(authorization.isUserAuthorized, controller.deleteFriendById)
 router.route("/users/:id/deleteRequest/")
   .delete(authorization.isUserAuthorized, controller.deleteFriendsReqById)
+router.route("/homepage/")
+  .get(authorization.isUserAuthorized, controller.showByToken)
 module.exports.Router = router
