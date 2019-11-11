@@ -1,10 +1,18 @@
 import React from 'react';
 class Registration extends React.Component {
-  state = {
-    login: String,
-    password: String,
-    confirmPassword: String,
-    date: Date
+  constructor(props) {
+    super(props);
+    this.state = {
+      login: String,
+      password: String,
+      confirmPassword: String,
+      date: Date
+    }
+    this.loginChange = this.loginChange.bind(this);
+    this.passwordChange = this.passwordChange.bind(this);
+    this.confirmPasswordChange = this.confirmPasswordChange.bind(this);
+    this.dateChange = this.dateChange.bind(this);
+    this.submit = this.submit.bind(this);
   }
   submit(event) {
     fetch('http://localhost:3000/registration/', {
@@ -26,6 +34,18 @@ class Registration extends React.Component {
   }
   componentDidMount() {
 
+  }
+  loginChange(event) {
+    this.setState({ login: event.target.value })
+  }
+  passwordChange(event) {
+    this.setState({ password: event.target.value })
+  }
+  confirmPasswordChange(event) {
+    this.setState({ confirmPassword: event.target.value })
+  }
+  dateChange(event) {
+    this.setState({ date: event.target.value })
   }
   render() {
     if (localStorage.getItem("authorized") == 1) {
