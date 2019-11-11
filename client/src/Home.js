@@ -3,7 +3,7 @@ import { watchFile } from 'fs';
 class Home extends React.Component {
   componentDidMount() {
     let token = localStorage.getItem("token")
-    fetch('http://localhost:3000/homepage/', {
+    fetch('http://localhost:9000/homepage/', {
       method: "GET",
       headers: {
         'authorization': "Token " + token,
