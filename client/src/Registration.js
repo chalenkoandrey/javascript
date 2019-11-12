@@ -15,7 +15,7 @@ class Registration extends React.Component {
     this.submit = this.submit.bind(this);
   }
   submit(event) {
-    fetch('http://localhost:3000/registration/', {
+    fetch('http://18.224.44.130:9000/registration/', {
       method: "POST",
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
