@@ -10,7 +10,7 @@ class UserPage extends React.Component {
   }
   iduser = this.props["location"]["pathname"].split("/")[2]
   componentDidMount() {
-    fetch('http://18.224.44.130:9000/user/' + this.iduser, {
+    fetch('http://localhost:9000/user/' + this.iduser, {
       method: "GET",
     })
       .then(response => response.json())

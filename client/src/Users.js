@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Link } from "react-router-dom";
 class Users extends React.Component {
   componentDidMount() {
-    fetch('http://18.224.44.130:9000/users', { method: "GET" })
+    fetch('http://localhost:9000/users', { method: "GET" })
       .then(response => response.json())
       .then(result => {
         this.setState({ users: result["result"] })
